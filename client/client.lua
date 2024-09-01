@@ -1,6 +1,8 @@
 local Peds = require 'data'
 local interact = GetResourceState('sleepless_interact'):find('start')
 
+local IDcount = 0
+
 ---@param data PedConfig
 local function spawnPed(data)
     if not data.ped then
@@ -124,10 +126,13 @@ local function addPed(data)
     end
 
     local points = {}
+    local id = IDcount + 1
+    IDcount = IDcount + 1
 
     for i = 1, #data.coords do
         local pedData = lib.table.clone(data)
         pedData.coords = data.coords[i] --[[@as vector4]]
+        pedData.id = id
 
         assert(type(pedData.coords) == 'vector4', 'pedmanager expected a vector4, but got' .. type(pedData.coords))
 
@@ -150,6 +155,13 @@ local function addPed(data)
             lib.hideContext()
         end
 
+        RegisterNetEvent("sleepless_pedmanager:removePeds", function(uniqueId)
+            if uniqueId == pedData.id then
+                dismissPed(pedData)
+                point:remove()
+            end
+        end)
+
         RegisterNetEvent('onResourceStop', function(resourceName)
             if data.resource == resourceName or resourceName == GetCurrentResourceName() then
                 dismissPed(pedData)
@@ -160,10 +172,13 @@ local function addPed(data)
         points[i] = point
     end
 
-    return #points == 1 and points[1] or points
+    return #points == 1 and points[1] , id or points , id
 end
 
 exports('addPed', addPed)
+exports('removePeds', function(id)
+    TriggerEvent('sleepless_pedmanager:removePeds', id)
+end)
 
 CreateThread(function()
     for i = 1, #Peds do
