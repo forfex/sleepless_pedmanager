@@ -31,8 +31,7 @@ local function spawnPed(data)
         end
 
         if interact and pedData.interactOptions then
-            pedData.interactOptions.entity = data.ped
-            exports.sleepless_interact:addLocalEntity(pedData.interactOptions)
+            exports.sleepless_interact:addLocalEntity(currentPed, pedData.interactOptions)
         end
 
         if pedData.animation then
@@ -135,11 +134,6 @@ local function addPed(data)
         pedData.id = id
 
         assert(type(pedData.coords) == 'vector4', 'pedmanager expected a vector4, but got' .. type(pedData.coords))
-
-        if pedData.interactOptions then
-            pedData.interactOptions = lib.table.clone(pedData.interactOptions)
-            pedData.interactOptions.id = string.format('%s:%s', pedData.interactOptions.id, i)
-        end
 
         local point = lib.points.new({
             coords = pedData.coords.xyz,
